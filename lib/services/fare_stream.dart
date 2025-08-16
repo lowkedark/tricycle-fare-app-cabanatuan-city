@@ -1,5 +1,6 @@
 import "dart:async";
 import "package:geolocator/geolocator.dart";
+import "package:latlong2/latlong.dart";
 import "fare_calculation.dart";
 import "gps_tracker.dart";
 
@@ -11,11 +12,13 @@ class FareStream {
 
   final StreamController<double> _fareController = StreamController.broadcast();
   final StreamController<double> _distanceController = StreamController.broadcast();
+  final StreamController<LatLng> _locationController = StreamController.broadcast();
 
   Stream<double> get fareStreamed => _fareController.stream;
   Stream<double> get distanceStream => _distanceController.stream;
+  Stream<LatLng> get locationStream => _locationController.stream;
 
-  //contructor
+  // constructor
   FareStream({
     double farePerKM = 20.0,
     double discountRate = 0.25,
@@ -32,8 +35,6 @@ class FareStream {
     );
   }
 
-
-
   Future<void> startRide() async {
     bool hasPermission = await _gpsTracker.checkAndRequestPermission();
     if (!hasPermission) {
@@ -45,6 +46,7 @@ class FareStream {
 
       _fareController.add(currentFare);
       _distanceController.add(_fareCalculation.totalDistance);
+      _locationController.add(LatLng(position.latitude, position.longitude));
     });
   }
 
@@ -62,6 +64,7 @@ class FareStream {
   void dispose() {
     _fareController.close();
     _distanceController.close();
+    _locationController.close();
     stopRide();
   }
 }
