@@ -7,7 +7,7 @@ import "gps_tracker.dart";
 class FareStream {
   final GpsTracker _gpsTracker = GpsTracker();
   late FareCalculation _fareCalculation;
-  
+
   StreamSubscription<Position>? _gpsSubscription;
 
   final StreamController<double> _fareController = StreamController.broadcast();
@@ -18,20 +18,29 @@ class FareStream {
   Stream<double> get distanceStream => _distanceController.stream;
   Stream<LatLng> get locationStream => _locationController.stream;
 
-  // constructor
+  int numberOfPassengers;
+  bool isDiscounted;
+
   FareStream({
-    double farePerKM = 20.0,
-    double discountRate = 0.25,
-    bool isDiscounted = false,
-    int numberOfPassengers = 1,
+    this.numberOfPassengers = 1,
+    this.isDiscounted = false,
     double baseFare = 0.0,
   }) {
     _fareCalculation = FareCalculation(
-      farePerKM: farePerKM,
-      discountRate: discountRate,
-      isDiscounted: isDiscounted,
       numberOfPassengers: numberOfPassengers,
+      isDiscounted: isDiscounted,
       baseFare: baseFare,
+    );
+  }
+
+  void updateFareRules({int? passengers, bool? discounted}) {
+    numberOfPassengers = passengers ?? numberOfPassengers;
+    isDiscounted = discounted ?? isDiscounted;
+
+    _fareCalculation = FareCalculation(
+      numberOfPassengers: numberOfPassengers,
+      isDiscounted: isDiscounted,
+      baseFare: _fareCalculation.baseFare,
     );
   }
 
